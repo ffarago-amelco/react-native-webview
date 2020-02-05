@@ -236,6 +236,9 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
   @ReactProp(name = "javaScriptEnabled")
   public void setJavaScriptEnabled(WebView view, boolean enabled) {
     view.getSettings().setJavaScriptEnabled(enabled);
+    if(enabled) {
+      view.getSettings().setSupportMultipleWindows(enabled);
+    }
   }
 
   @ReactProp(name = "showsHorizontalScrollIndicator")
