@@ -18,6 +18,7 @@ static NSString *const HistoryShimName = @"ReactNativeHistoryShim";
 static NSString *const MessageHandlerName = @"ReactNativeWebView";
 static NSURLCredential* clientAuthenticationCredential;
 static NSDictionary* customCertificatesForHost;
+static WKWebView *popupWebView;
 
 // runtime trick to remove WKWebView keyboard default toolbar
 // see: http://stackoverflow.com/questions/19033292/ios-7-uiwebview-keyboard-issue/19042279#19042279
@@ -123,15 +124,20 @@ static NSDictionary* customCertificatesForHost;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-/**
- * See https://stackoverflow.com/questions/25713069/why-is-wkwebview-not-opening-links-with-target-blank/25853806#25853806 for details.
- */
+// we are creating a sub webview here to get Paysafe working
 - (WKWebView *)webView:(WKWebView *)webView createWebViewWithConfiguration:(WKWebViewConfiguration *)configuration forNavigationAction:(WKNavigationAction *)navigationAction windowFeatures:(WKWindowFeatures *)windowFeatures
 {
-  if (!navigationAction.targetFrame.isMainFrame) {
-    [webView loadRequest:navigationAction.request];
-  }
-  return nil;
+      popupWebView = [[WKWebView alloc] initWithFrame:webView.frame configuration:configuration];
+      popupWebView.navigationDelegate = self;
+      popupWebView.UIDelegate = self;
+      [webView addSubview:popupWebView];
+      return popupWebView;
+}
+
+- (void)webViewDidClose:(WKWebView *)webView;
+{
+    [webView removeFromSuperview];
+    popupWebView = nil;
 }
 
 - (WKWebViewConfiguration *)setUpWkWebViewConfig
